@@ -25,6 +25,8 @@ install: all
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/gx
+	rm -f $(DESTDIR)$(PREFIX)/bin/port
+	rm -f $(DESTDIR)$(PREFIX)/bin/std_inc
 
 .PHONY: all clean install uninstall
 
