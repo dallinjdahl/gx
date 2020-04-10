@@ -1,0 +1,5 @@
+#!/bin/sh
+[[ -e "/usr/include/$1" ]] && echo "/usr/include/$1" && exit
+[[ -e "/usr/local/include/$1" ]] && echo "/usr/local/include/$1" && exit
+[[ -e "/usr/lib/gcc/*/*/include/$1" ]] && echo /usr/lib/gcc/*/*/include/$1" && exit
+[[ -e "/usr/lib/gcc/*/*/include-fixed/$1" ]] && echo /usr/lib/gcc/*/*/include-fixed/$1" && exit

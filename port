@@ -1,0 +1,15 @@
+#!/bin/sh
+op="$1"
+shift 1
+case "$op" in
+	web)
+		firefox "$@" &
+		;;
+	edit)
+		E $@ &
+		;;
+	a_edit)
+		E -a $@ &
+		;;
+esac
+
