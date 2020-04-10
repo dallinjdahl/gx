@@ -10,6 +10,25 @@ gx depends on the unix version of plan9's
 make && sudo make install
 ```
 
+## port
+port is a script that dissassociates interfaces from implementations.
+This allows you to register multiple implementations for a given interface,
+and makes it easier to use in a multi-user environment.
+```
+#!/bin/sh
+op="$1"
+shift 1
+case "$op" in
+	web)
+		firefox "$@" &
+		;;
+	edit)
+		st vim $@ &
+		;;
+esac
+```
+This routes web actions to firefox, and edits to vim running in st.
+
 ## config.h
 gx uses [X macros](https://en.wikipedia.org/wiki/X_Macro) to simplify
 the development, so each line but the last must have a `\` as the
@@ -26,13 +45,13 @@ Example:
 ```
 #define TABLE \
 	X("https?://.+") \
-	Y("firefox \\0") \
+	Y("port web \\0") \
 	X("#include \"([a-zA-Z0-9]+\\.h)\"") \
-	Y("st vim \\1")
+	Y("port edit \\1")
 ```
-When presented with a http or https url, it runs firefox to open it,
-and when presented with an include directive, it will open a terminal
-running vim and the file.  This is meant to be run, among other ways,
+When presented with a http or https url, it runs the web port to open it,
+and when presented with an include directive, it will open the edit port on the file.
+This is meant to be run, among other ways,
 inside vim or [vis](https://github.com/martanne/vis) to better utilize
 linux and [dwm](https://dwm.suckless.org) as an ide.
 
