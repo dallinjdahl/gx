@@ -11,5 +11,8 @@ case "$op" in
 	a_edit)
 		E -a $@ &
 		;;
+	man)
+		MANWIDTH=110 st man $@ &
+		;;
 esac
 
