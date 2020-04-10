@@ -30,13 +30,13 @@ Example:
 	X("#include \"([a-zA-Z0-9]+\\.h)\"") \
 	Y("st vim \\1")
 ```
-so when presented with a http or https url, it runs firefox to open it,
+When presented with a http or https url, it runs firefox to open it,
 and when presented with an include directive, it will open a terminal
 running vim and the file.  This is meant to be run, among other ways,
 inside vim or [vis](https://github.com/martanne/vis) to better utilize
 linux and [dwm](https://dwm.suckless.org) as an ide.
 
-## features
+## Features
 Note that if the last character in the input is a newline, it doesn't
 have to be matched.  There are limits to the number of matches (8) and
 the length of the input (1023 bytes) and the regex-interpolated command to
