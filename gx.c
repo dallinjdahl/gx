@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "config.h"
 
@@ -35,6 +37,7 @@ char *commands[] = {
 
 
 char buf[1024] = {0};
+char *in;
 
 void fill() {
 	fgets(buf, 1024, stdin);
@@ -53,6 +56,7 @@ Resub results[8];
 char run[4096] = {0};
 
 uint8_t VERBOSE = 0;
+uint8_t MESSAGE = 0;
 
 void doplumb() {
 	uint8_t found = 1;
@@ -72,13 +76,13 @@ void doplumb() {
 			system(run);
 			exit(0);
 		}
-		VERBOSE ? fprintf(stderr, "checking %s against %s for %s\n", buf, i->re, commands[j]) : 0;
+		VERBOSE ? fprintf(stderr, "checking %s against %s for %s\n", in, i->re, commands[j]) : 0;
 		results->s.sp = 0;
 		results->e.ep = 0;
-		found = regexec(i->prog, buf, results, 8) == 1;
+		found = regexec(i->prog, in, results, 8) == 1;
 		if(found) {
 			VERBOSE ? fprintf(stderr, "found for %s\n", commands[j]) : 0;
-			found = results->s.sp == buf && (!*(results->e.ep) || *(results->e.ep) == '\n');
+			found = results->s.sp == in && !*(results->e.ep);
 		}
 	}
 }
@@ -88,14 +92,38 @@ uint8_t streq(char *s, char *t) {
 	return *s == *t;
 }
 
+char *trim(char *s) {
+	while(*s && isspace(*s)) s++;
+	if(!*s) return s;
+	char *e = s;
+	while(*e) e++;
+	e--;
+	while(isspace(*e)) *(e--) = 0;
+	return s;
+}
+
 int main(int argc, char ** argv) {
 	for(int i = 1; i < argc; i++) {
 		if(streq(argv[i], "--verbose")) {
 			VERBOSE=1;
 		}
+		if(streq(argv[i], "-m")) {
+			MESSAGE=1;
+			i++;
+			in = argv[i];
+		}
+		if(streq(argv[i], "-h")) {
+			printf("Usage: gx [--verbose] [-m \"message\"]\n");
+		}
 	}
+
+	if(!MESSAGE) {
+		fill();
+		in = buf;
+	}
+
+	in = trim(in);
 	init();
-	fill();
 	doplumb();
 	exit(1);
 }
