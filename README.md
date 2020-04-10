@@ -60,3 +60,7 @@ Note that if the last character in the input is a newline, it doesn't
 have to be matched.  There are limits to the number of matches (8) and
 the length of the input (1023 bytes) and the regex-interpolated command to
 run (4095 bytes). If you don't like them, you can edit them in the source.
+
+## dwm
+To aid in incorporating this with dwm, there is a script, `dwmgx` that
+pipes the primary selection to gx.  It can be added to your dwm config.h
