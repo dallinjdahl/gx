@@ -1,0 +1,102 @@
+#include <utf.h>
+#include <fmt.h>
+#include <regexp9.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include "config.h"
+
+struct match {
+	char *re;
+	Reprog *prog;
+};
+
+
+#define X(s) {s, 0},
+#define Y(s) {0, 0},
+struct match matches[] = {
+	TABLE
+	{(char *)-1, (Reprog *)-1},
+};
+#undef X
+#undef Y
+
+
+#define X(s)
+#define Y(s) s,
+char *commands[] = {
+	TABLE
+	0,
+};
+#undef X
+#undef Y
+
+
+char buf[1024] = {0};
+
+void fill() {
+	fgets(buf, 1024, stdin);
+}
+
+void init() {
+	for(struct match *i = matches; i->re != (char *)-1; i++) {
+		if(i->re == 0) {
+			continue;
+		}
+		i->prog = regcomp(i->re);
+	}
+}
+
+Resub results[8];
+char run[4096] = {0};
+
+uint8_t VERBOSE = 0;
+
+void doplumb() {
+	uint8_t found = 1;
+	uint16_t j = 0;
+	for(struct match *i = matches; i->re != (char *)-1; i++) {
+		if(!found && i->re == 0) {
+			found = 1;
+			j++;
+			continue;
+		}
+		if(!found) {
+			continue;
+		}
+		if(i->re == 0) {
+			regsub(commands[j], run, 4096, results, 8);
+			VERBOSE ? fprintf(stderr, "running: %s\n", run) : 0;
+			system(run);
+			exit(0);
+		}
+		VERBOSE ? fprintf(stderr, "checking %s against %s for %s\n", buf, i->re, commands[j]) : 0;
+		results->s.sp = 0;
+		results->e.ep = 0;
+		found = regexec(i->prog, buf, results, 8) == 1;
+		if(found) {
+			VERBOSE ? fprintf(stderr, "found for %s\n", commands[j]) : 0;
+			found = results->s.sp == buf && (!*(results->e.ep) || *(results->e.ep) == '\n');
+		}
+	}
+}
+
+uint8_t streq(char *s, char *t) {
+	while(*s && *s++ == *t++);
+	return *s == *t;
+}
+
+int main(int argc, char ** argv) {
+	for(int i = 1; i < argc; i++) {
+		if(streq(argv[i], "--verbose")) {
+			VERBOSE=1;
+		}
+	}
+	init();
+	fill();
+	doplumb();
+	exit(1);
+}
+
