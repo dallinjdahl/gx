@@ -7,6 +7,9 @@ all: gx port std_inc
 gx: gx.c config.h
 	gcc $< -lregexp9 -lutf -o $@
 
+config.h:
+	cp config.def.h config.h
+
 clean:
 	rm -rfv gx
 
