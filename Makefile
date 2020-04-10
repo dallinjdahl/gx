@@ -10,6 +10,9 @@ gx: gx.c config.h
 config.h:
 	cp config.def.h config.h
 
+port:
+	cp port.def port
+
 clean:
 	rm -rfv gx
 
