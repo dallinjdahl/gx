@@ -88,7 +88,10 @@ void doplumb() {
 }
 
 uint8_t streq(char *s, char *t) {
-	while(*s && *s++ == *t++);
+	while(*s && *s == *t) {
+		s++;
+		t++;
+	}
 	return *s == *t;
 }
 
