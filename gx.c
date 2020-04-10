@@ -104,6 +104,10 @@ char *trim(char *s) {
 
 int main(int argc, char ** argv) {
 	for(int i = 1; i < argc; i++) {
+		if(streq(argv[i], "-h")) {
+			printf("Usage: gx [--verbose] [-m \"message\"]\n");
+			exit(0);
+		}
 		if(streq(argv[i], "--verbose")) {
 			VERBOSE=1;
 		}
@@ -111,9 +115,6 @@ int main(int argc, char ** argv) {
 			MESSAGE=1;
 			i++;
 			in = argv[i];
-		}
-		if(streq(argv[i], "-h")) {
-			printf("Usage: gx [--verbose] [-m \"message\"]\n");
 		}
 	}
 
