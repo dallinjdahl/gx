@@ -1,0 +1,148 @@
+diff --git a/config.def.h b/config.def.h
+index 546edda..df14610 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -457,3 +457,9 @@ static char ascii_printable[] =
+ 	" !\"#$%&'()*+,-./0123456789:;<=>?"
+ 	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+ 	"`abcdefghijklmnopqrstuvwxyz{|}~";
++
++/*
++ * plumb_cmd is run on mouse button 3 click, with first NULL set to
++ * current selection and with cwd set to the cwd of the active shell
++ */
++static char *plumb_cmd[] = {"gx", "-m", NULL, NULL};
+diff --git a/st.c b/st.c
+index 3e48410..11dda7b 100644
+--- a/st.c
++++ b/st.c
+@@ -27,6 +27,9 @@
+ #elif defined(__FreeBSD__) || defined(__DragonFly__)
+  #include <libutil.h>
+ #endif
++#if defined(__OpenBSD__)
++ #include <sys/sysctl.h>
++#endif
+ 
+ /* Arbitrary sizes */
+ #define UTF_INVALID   0xFFFD
+@@ -232,6 +235,22 @@ static uchar utfmask[UTF_SIZ + 1] = {0xC0, 0x80, 0xE0, 0xF0, 0xF8};
+ static Rune utfmin[UTF_SIZ + 1] = {       0,    0,  0x80,  0x800,  0x10000};
+ static Rune utfmax[UTF_SIZ + 1] = {0x10FFFF, 0x7F, 0x7FF, 0xFFFF, 0x10FFFF};
+ 
++int
++subprocwd(char *path)
++{
++#if   defined(__linux)
++	if (snprintf(path, PATH_MAX, "/proc/%d/cwd", pid) < 0)
++		return -1;
++	return 0;
++#elif defined(__OpenBSD__)
++	size_t sz = PATH_MAX;
++	int name[3] = {CTL_KERN, KERN_PROC_CWD, pid};
++	if (sysctl(name, 3, path, &sz, 0, 0) == -1)
++		return -1;
++	return 0;
++#endif
++}
++
+ ssize_t
+ xwrite(int fd, const char *s, size_t len)
+ {
+@@ -799,7 +818,7 @@ ttynew(char *line, char *cmd, char *out, char **args)
+ 		break;
+ 	default:
+ #ifdef __OpenBSD__
+-		if (pledge("stdio rpath tty proc", NULL) == -1)
++		if (pledge("stdio rpath tty proc ps exec", NULL) == -1)
+ 			die("pledge\n");
+ #endif
+ 		close(s);
+diff --git a/st.h b/st.h
+index a1928ca..4f5abc4 100644
+--- a/st.h
++++ b/st.h
+@@ -111,6 +111,8 @@ void *xmalloc(size_t);
+ void *xrealloc(void *, size_t);
+ char *xstrdup(char *);
+ 
++int subprocwd(char *);
++
+ /* config.h globals */
+ extern char *utmp;
+ extern char *stty_args;
+diff --git a/x.c b/x.c
+index e5f1737..cc58642 100644
+--- a/x.c
++++ b/x.c
+@@ -5,6 +5,7 @@
+ #include <locale.h>
+ #include <signal.h>
+ #include <sys/select.h>
++#include <sys/wait.h>
+ #include <time.h>
+ #include <unistd.h>
+ #include <libgen.h>
+@@ -216,6 +217,7 @@ static void (*handler[LASTEvent])(XEvent *) = {
+ };
+ 
+ /* Globals */
++static int plumbsel;
+ static DC dc;
+ static XWindow xw;
+ static XSelection xsel;
+@@ -681,6 +683,37 @@ xsetsel(char *str)
+ 	setsel(str, CurrentTime);
+ }
+ 
++void
++plumbinit()
++{
++	for(plumbsel = 0; plumb_cmd[plumbsel]; plumbsel++);
++}
++
++void
++plumb(char *sel) {
++	if (sel == NULL)
++		return;
++	char cwd[PATH_MAX];
++	pid_t child;
++	if (subprocwd(cwd) != 0)
++		return;
++
++	plumb_cmd[plumbsel] = sel;
++
++	switch(child = fork()) {
++		case -1:
++			return;
++		case 0:
++			if (chdir(cwd) != 0)
++				exit(1);
++			if (execvp(plumb_cmd[0], plumb_cmd) == -1)
++				exit(1);
++			exit(0);
++		default:
++			waitpid(child, NULL, 0);
++	}
++}
++
+ void
+ brelease(XEvent *e)
+ {
+@@ -693,6 +726,8 @@ brelease(XEvent *e)
+ 		return;
+ 	if (e->xbutton.button == Button1)
+ 		mousesel(e, 1);
++	else if (e->xbutton.button == Button3)
++		plumb(xsel.primary);
+ }
+ 
+ void
+@@ -2035,6 +2070,7 @@ main(int argc, char *argv[])
+ 	} ARGEND;
+ 
+ run:
++	plumbinit();
+ 	if (argc > 0) /* eat all remaining arguments */
+ 		opt_cmd = argv;
+ 
