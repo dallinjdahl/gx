@@ -64,3 +64,8 @@ run (4095 bytes). If you don't like them, you can edit them in the source.
 ## dwm
 To aid in incorporating this with dwm, there is a script, `dwmgx` that
 pipes the primary selection to gx.  It can be added to your dwm config.h
+
+
+## st
+To incorporate this into st, a patch is provided called [simple_plumb.diff](/simple_plumb.diff).
+This sends the currently selected text in st is sent to the plumber as a parameter on right click.
