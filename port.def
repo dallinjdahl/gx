@@ -6,13 +6,13 @@ case "$op" in
 		firefox "$@" &
 		;;
 	edit)
-		E $@ &
+		E $@
 		;;
 	a_edit)
-		E -a $@ &
+		E -a $@
 		;;
 	2a_edit)
-		E -2 $@ &
+		E -2 $@
 		;;
 	man)
 		MANWIDTH=110 st man $@ &
