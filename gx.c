@@ -80,7 +80,8 @@ void doplumb() {
 		if(i->re == 0) {
 			regsub(commands[j], run, 4096, results, 8);
 			VERBOSE ? fprintf(stderr, "running: %s\n", run) : 0;
-			execl("/bin/sh", "sh", "-c", run, NULL);
+			system(run);
+			exit(0);
 		}
 		VERBOSE ? fprintf(stderr, "checking %s against %s for %s\n", in, i->re, commands[j]) : 0;
 		results->s.sp = 0;
