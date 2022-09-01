@@ -41,12 +41,18 @@ char *commands[] = {
 char buf[1024] = {0};
 char *in;
 
+Resub results[8];
+char run[4096] = {0};
+
+uint8_t VERBOSE = 0;
+uint8_t MESSAGE = 0;
+
 void fill() {
 	int devnull = open("/dev/null", O_RDONLY);
 	fgets(buf, 1024, stdin);
 	dup2(devnull, fileno(stdin));
 	dup2(devnull, fileno(stdout));
-	dup2(devnull, fileno(stderr));
+	VERBOSE ? 0 : dup2(devnull, fileno(stderr));
 	close(devnull);
 }
 
@@ -58,12 +64,6 @@ void init() {
 		i->prog = regcomp(i->re);
 	}
 }
-
-Resub results[8];
-char run[4096] = {0};
-
-uint8_t VERBOSE = 0;
-uint8_t MESSAGE = 0;
 
 void doplumb() {
 	uint8_t found = 1;
