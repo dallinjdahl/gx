@@ -1,7 +1,7 @@
 #define TABLE \
 	 /*web addresses*/\
 	X("https?://.+") \
-	Y("port web \\0") \
+	Y("port web '\\0'") \
 	/*man files*/\
 	X("([a-zA-Z0-9\\-_]+)\\(([0-9a-zA-Z]+)\\),?") \
 	Y("port man \\2 \\1") \
