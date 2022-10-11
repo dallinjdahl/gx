@@ -49,7 +49,7 @@ uint8_t MESSAGE = 0;
 
 void fill() {
 	int devnull = open("/dev/null", O_RDONLY);
-	fgets(buf, 1024, stdin);
+	fread(buf, 1, 1024, stdin);
 	dup2(devnull, fileno(stdin));
 	dup2(devnull, fileno(stdout));
 	VERBOSE ? 0 : dup2(devnull, fileno(stderr));
